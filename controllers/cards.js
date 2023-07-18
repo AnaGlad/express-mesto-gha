@@ -39,8 +39,8 @@ function postCard(req, res) {
 function deleteCard(req, res) {
   const { cardId } = req.params;
   console.log(cardId);
-  Card.deleteOne({ _id: cardId })
-    .then((err, card) => {
+  Card.findByIdAndDelete(cardId)
+    .then((card) => {
       if (!card) {
         return res
           .status(NOT_FOUND_CODE)
