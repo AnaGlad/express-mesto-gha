@@ -16,7 +16,7 @@ https://github.com/AnaGlad/express-mesto-gha
 
 ### Используемые инструменты
 * Express
-* Mongoos
+* Mongoose
 * MongoDB
 
 #### Улучшения
