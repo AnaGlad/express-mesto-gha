@@ -40,15 +40,21 @@ function deleteCard(req, res) {
   const { cardId } = req.params;
   console.log(cardId);
   Card.deleteOne({ _id: cardId })
-    .then((card) => {
+    .then((err, card) => {
       if (!card) {
         return res
           .status(NOT_FOUND_CODE)
           .send({ message: "Запрашиваемая карточка не найдена" });
       }
+
       res.status(OK_CODE).send({ message: "Карточка удалена" });
     })
     .catch((err) => {
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_CODE)
+          .send({ message: "Некорректный формат Id" });
+      }
       res
         .status(DEFAULT_ERROR_CODE)
         .send({ message: "На сервере произошла ошибка" });
