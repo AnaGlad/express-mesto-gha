@@ -15,12 +15,6 @@ mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use(bodyParser.json());
-
-app.use(routes);
-
 app.use((req, res, next) => {
   req.user = {
     _id: '64b52cb90c57cf52e045f8e0' // вставьте сюда _id созданного в предыдущем пункте пользователя
@@ -28,6 +22,14 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use(bodyParser.json());
+
+app.use(routes);
+
+
 
 app.listen(PORT, () => {
   console.log(`Application is running on port ${PORT}`);
