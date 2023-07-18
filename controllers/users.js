@@ -26,11 +26,17 @@ function getUser(req, res) {
       }
       res.status(OK_CODE).send(user);
     })
-    .catch((err) =>
+    .catch((err) => {
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_CODE)
+          .send({ message: "Некорректный формат Id" });
+      }
       res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" })
-    );
+        .send({ message: "На сервере произошла ошибка" });
+    });
 }
 
 function createUser(req, res) {
@@ -57,9 +63,7 @@ function updateUserProfile(req, res) {
   return User.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
-    {
-      new: true,
-    }
+    { new: true, runValidators: true }
   )
     .then((user) => {
       if (!user) {
