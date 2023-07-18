@@ -71,13 +71,10 @@ function putLike(req, res) {
       res.status(OK_CODE).send({ message: "Лайк поставлен" });
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        res.status(ERROR_CODE).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(", ")}`,
-        });
-        return;
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_CODE)
+          .send({ message: "Некорректный формат Id" });
       }
       res
         .status(DEFAULT_ERROR_CODE)
@@ -101,13 +98,10 @@ function deleteLike(req, res) {
       res.status(OK_CODE).send({ message: "Лайк удален" });
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        res.status(ERROR_CODE).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(", ")}`,
-        });
-        return;
+      if (err.name === "CastError") {
+        return res
+          .status(ERROR_CODE)
+          .send({ message: "Некорректный формат Id" });
       }
       res
         .status(DEFAULT_ERROR_CODE)
