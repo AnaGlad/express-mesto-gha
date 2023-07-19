@@ -1,4 +1,5 @@
-const User = require("../models/user");
+const User = require('../models/user');
+
 const ERROR_CODE = 400;
 const NOT_FOUND_CODE = 404;
 const DEFAULT_ERROR_CODE = 500;
@@ -7,11 +8,7 @@ const OK_CODE = 200;
 function getUserList(req, res) {
   return User.find({})
     .then((users) => res.status(OK_CODE).send(users))
-    .catch((err) =>
-      res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" })
-    );
+    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' }));
 }
 
 function getUser(req, res) {
@@ -22,20 +19,20 @@ function getUser(req, res) {
       if (!user) {
         return res
           .status(NOT_FOUND_CODE)
-          .send({ message: "Запрашиваемый пользователь не найден" });
+          .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      res.status(OK_CODE).send(user);
+      return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
       console.log(err.name);
-      if (err.name === "CastError") {
+      if (err.name === 'CastError') {
         return res
           .status(ERROR_CODE)
-          .send({ message: "Некорректный формат Id" });
+          .send({ message: 'Некорректный формат Id' });
       }
-      res
+      return res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 }
 
@@ -45,17 +42,17 @@ function createUser(req, res) {
       res.status(OK_CODE).send(user);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({
           message: `${Object.values(err.errors)
             .map((error) => error.message)
-            .join(", ")}`,
+            .join(', ')}`,
         });
         return;
       }
       res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 }
 
@@ -63,28 +60,28 @@ function updateUserProfile(req, res) {
   return User.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
         return res
           .status(NOT_FOUND_CODE)
-          .send({ message: "Запрашиваемый пользователь не найден" });
+          .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      res.status(OK_CODE).send(user);
+      return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({
           message: `${Object.values(err.errors)
             .map((error) => error.message)
-            .join(", ")}`,
+            .join(', ')}`,
         });
         return;
       }
       res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 }
 
@@ -94,28 +91,28 @@ function updateUserAvatar(req, res) {
     { avatar: req.body.avatar },
     {
       new: true,
-    }
+    },
   )
     .then((user) => {
       if (!user) {
         return res
           .status(NOT_FOUND_CODE)
-          .send({ message: "Запрашиваемый пользователь не найден" });
+          .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      res.status(OK_CODE).send(user);
+      return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({
           message: `${Object.values(err.errors)
             .map((error) => error.message)
-            .join(", ")}`,
+            .join(', ')}`,
         });
         return;
       }
       res
         .status(DEFAULT_ERROR_CODE)
-        .send({ message: "На сервере произошла ошибка" });
+        .send({ message: 'На сервере произошла ошибка' });
     });
 }
 
