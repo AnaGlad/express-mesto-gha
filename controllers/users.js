@@ -1,62 +1,69 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
 
-const ERROR_CODE = 400;
-const NOT_FOUND_CODE = 404;
-const DEFAULT_ERROR_CODE = 500;
+const NotFoundError = require('../errors/not-found-err'); // 404
+const WrongTokenError = require('../errors/wrong token-err'); // 401
+const ExistedEmailError = require('../errors/existed email-err'); // 409
+const BadRequestError = require('../errors/bad request-err'); // 400
+
+// const ERROR_CODE = 400;
+// const NOT_FOUND_CODE = 404;
+// const DEFAULT_ERROR_CODE = 500;
 const OK_CODE = 200;
 
-function getUserList(req, res) {
+function getUserList(req, res, next) {
   return User.find({})
     .then((users) => res.status(OK_CODE).send(users))
-    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'На сервере произошла ошибка' }));
+    .catch(next);
 }
 
-function getUser(req, res) {
+function getUser(req, res, next) {
   const { userId } = req.params;
-  console.log(userId);
   return User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res
-          .status(NOT_FOUND_CODE)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'CastError') {
-        return res
-          .status(ERROR_CODE)
-          .send({ message: 'Некорректный формат Id' });
+        throw new BadRequestError('Некорректный формат Id');
+      } else {
+        throw err;
       }
-      return res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+    })
+    .catch(next);
 }
 
-function createUser(req, res) {
-  return User.create({ ...req.body })
+function createUser(req, res, next) {
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => User.create({
+      name: req.body.name,
+      about: req.body.about,
+      avatar: req.body.avatar,
+      email: req.body.email,
+      password: hash,
+    }))
     .then((user) => {
       res.status(OK_CODE).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
-        return;
+      if (err.code === 11000) {
+        throw new ExistedEmailError('Такой email уже существует');
       }
-      res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError(`${Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ')}`);
+      }
+    })
+    .catch(next);
 }
 
-function updateUserProfile(req, res) {
+function updateUserProfile(req, res, next) {
   return User.findByIdAndUpdate(
     req.user._id,
     { ...req.body },
@@ -64,28 +71,23 @@ function updateUserProfile(req, res) {
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(NOT_FOUND_CODE)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
-        return;
+        throw new BadRequestError(`${Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ')}`);
+      } else {
+        throw err;
       }
-      res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+    })
+    .catch(next);
 }
 
-function updateUserAvatar(req, res) {
+function updateUserAvatar(req, res, next) {
   return User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
@@ -95,25 +97,42 @@ function updateUserAvatar(req, res) {
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(NOT_FOUND_CODE)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
       return res.status(OK_CODE).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.message)
-            .join(', ')}`,
-        });
-        return;
+        throw new BadRequestError(`${Object.values(err.errors)
+          .map((error) => error.message)
+          .join(', ')}`);
+      } else { throw err; }
+    })
+    .catch(next);
+}
+
+function login(req, res, next) {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((err) => {
+      throw new WrongTokenError(err.message);
+    })
+    .catch(next);
+}
+
+function getUserInfo(req, res, next) {
+  return User.findById(req.user)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
-      res
-        .status(DEFAULT_ERROR_CODE)
-        .send({ message: 'На сервере произошла ошибка' });
-    });
+      return res.status(OK_CODE).send(user);
+    })
+    .catch(next);
 }
 
 module.exports = {
@@ -122,4 +141,6 @@ module.exports = {
   createUser,
   updateUserProfile,
   updateUserAvatar,
+  login,
+  getUserInfo,
 };
