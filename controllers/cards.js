@@ -31,17 +31,16 @@ function postCard(req, res, next) {
 
 function deleteCard(req, res, next) {
   const { cardId } = req.params;
-  Card.findById({ _id: cardId })
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
-      if (req.user._id !== card.owner.toString()) {
-        console.log('req.user._id');
-        console.log(card.owner.toString());
+
+      if (req.user._id.toString() !== card.owner.toString()) {
         throw new ForbiddenActionError('Нет прав для совершения этого действия');
       }
-      Card.deleteOne({ _id: cardId });
+      Card.findByIdAndDelete(cardId).then();
       return res.status(OK_CODE).send({ message: 'Карточка удалена' });
     })
     .catch((err) => {
