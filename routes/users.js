@@ -1,4 +1,5 @@
 const router = require('express').Router();
+// const { celebrate, Joi, errors, Segments } = require('celebrate');
 
 const {
   getUserList,

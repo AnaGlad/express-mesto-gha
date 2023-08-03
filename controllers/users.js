@@ -4,13 +4,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const NotFoundError = require('../errors/not-found-err'); // 404
-const WrongTokenError = require('../errors/wrong token-err'); // 401
-const ExistedEmailError = require('../errors/existed email-err'); // 409
-const BadRequestError = require('../errors/bad request-err'); // 400
+const WrongTokenError = require('../errors/wrong-token-err'); // 401
+const ExistedEmailError = require('../errors/existed-email-err'); // 409
+const BadRequestError = require('../errors/bad-request-err'); // 400
 
-// const ERROR_CODE = 400;
-// const NOT_FOUND_CODE = 404;
-// const DEFAULT_ERROR_CODE = 500;
 const OK_CODE = 200;
 
 function getUserList(req, res, next) {
@@ -30,9 +27,9 @@ function getUser(req, res, next) {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Некорректный формат Id');
+        next(new BadRequestError('Некорректный формат Id'));
       } else {
-        throw err;
+        next(err);
       }
     })
     .catch(next);
@@ -52,12 +49,12 @@ function createUser(req, res, next) {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ExistedEmailError('Такой email уже существует');
+        next(new ExistedEmailError('Такой email уже существует'));
       }
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`${Object.values(err.errors)
+        next(new BadRequestError(`${Object.values(err.errors)
           .map((error) => error.message)
-          .join(', ')}`);
+          .join(', ')}`));
       }
     })
     .catch(next);
@@ -77,11 +74,11 @@ function updateUserProfile(req, res, next) {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`${Object.values(err.errors)
+        next(new BadRequestError(`${Object.values(err.errors)
           .map((error) => error.message)
-          .join(', ')}`);
+          .join(', ')}`));
       } else {
-        throw err;
+        next(err);
       }
     })
     .catch(next);
@@ -103,10 +100,10 @@ function updateUserAvatar(req, res, next) {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`${Object.values(err.errors)
+        next(new BadRequestError(`${Object.values(err.errors)
           .map((error) => error.message)
-          .join(', ')}`);
-      } else { throw err; }
+          .join(', ')}`));
+      } else { next(err); }
     })
     .catch(next);
 }
@@ -119,7 +116,7 @@ function login(req, res, next) {
       res.send({ token });
     })
     .catch((err) => {
-      throw new WrongTokenError(err.message);
+      next(new WrongTokenError(err.message));
     })
     .catch(next);
 }
