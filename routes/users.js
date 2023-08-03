@@ -1,5 +1,6 @@
 const router = require('express').Router();
 // const { celebrate, Joi, errors, Segments } = require('celebrate');
+const updateUserValidation = require('../validation/updateUserValidation');
 
 const {
   getUserList,
@@ -15,8 +16,8 @@ router.get('/me', getUserInfo);
 
 router.get('/:userId', getUser);
 
-router.patch('/me', updateUserProfile);
+router.patch('/me', updateUserValidation, updateUserProfile);
 
-router.patch('/me/avatar', updateUserAvatar);
+router.patch('/me/avatar', updateUserValidation, updateUserAvatar);
 
 module.exports = router;
