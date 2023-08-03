@@ -22,7 +22,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.post('/signin', login);
+app.post('/signin', createUserValidation, login);
 app.post('/signup', createUserValidation, createUser);
 app.use(auth);
 app.use(routes);
