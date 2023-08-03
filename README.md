@@ -20,5 +20,4 @@ https://github.com/AnaGlad/express-mesto-gha
 * MongoDB
 
 #### Улучшения
-* Добаборать авторизацию
 * Совместить с фронтом
