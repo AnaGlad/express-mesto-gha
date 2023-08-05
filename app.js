@@ -24,8 +24,8 @@ app.post('/signin', createUserValidation, login);
 app.post('/signup', createUserValidation, createUser);
 app.use(auth);
 app.use(routes);
-app.use(errorHandler);
 app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Application is running on port ${PORT}`);
