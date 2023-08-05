@@ -5,6 +5,7 @@ const BadRequestError = require('../errors/bad-request-err'); // 400
 const ForbiddenActionError = require('../errors/forbidden-action'); // 403
 
 const OK_CODE = 200;
+const CREATED_CODE = 201;
 
 function getCardList(req, res, next) {
   return Card.find({})
@@ -15,7 +16,7 @@ function getCardList(req, res, next) {
 function postCard(req, res, next) {
   return Card.create({ ...req.body, owner: req.user })
     .then((card) => {
-      res.status(OK_CODE).send(card);
+      res.status(CREATED_CODE).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -25,8 +26,7 @@ function postCard(req, res, next) {
       } else {
         next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 function deleteCard(req, res, next) {
@@ -47,8 +47,7 @@ function deleteCard(req, res, next) {
       if (err.name === 'CastError') {
         next(new BadRequestError('Некорректный формат Id'));
       } else { next(err); }
-    })
-    .catch(next);
+    });
 }
 
 function putLike(req, res, next) {
@@ -69,8 +68,7 @@ function putLike(req, res, next) {
       } else {
         next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 function deleteLike(req, res, next) {
@@ -91,8 +89,7 @@ function deleteLike(req, res, next) {
       } else {
         next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 module.exports = {

@@ -9,6 +9,7 @@ const ExistedEmailError = require('../errors/existed-email-err'); // 409
 const BadRequestError = require('../errors/bad-request-err'); // 400
 
 const OK_CODE = 200;
+const CREATED_CODE = 201;
 
 function getUserList(req, res, next) {
   return User.find({})
@@ -31,8 +32,7 @@ function getUser(req, res, next) {
       } else {
         next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 function createUser(req, res, next) {
@@ -45,7 +45,7 @@ function createUser(req, res, next) {
       password: hash,
     }))
     .then((user) => {
-      res.status(OK_CODE).send({
+      res.status(CREATED_CODE).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
@@ -55,14 +55,14 @@ function createUser(req, res, next) {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ExistedEmailError('Такой email уже существует'));
-      }
-      if (err.name === 'ValidationError') {
+      } else if (err.name === 'ValidationError') {
         next(new BadRequestError(`${Object.values(err.errors)
           .map((error) => error.message)
           .join(', ')}`));
+      } else {
+        next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 function updateUserProfile(req, res, next) {
@@ -85,8 +85,7 @@ function updateUserProfile(req, res, next) {
       } else {
         next(err);
       }
-    })
-    .catch(next);
+    });
 }
 
 function updateUserAvatar(req, res, next) {
@@ -109,8 +108,7 @@ function updateUserAvatar(req, res, next) {
           .map((error) => error.message)
           .join(', ')}`));
       } else { next(err); }
-    })
-    .catch(next);
+    });
 }
 
 function login(req, res, next) {
@@ -122,8 +120,7 @@ function login(req, res, next) {
     })
     .catch((err) => {
       next(new WrongTokenError(err.message));
-    })
-    .catch(next);
+    });
 }
 
 function getUserInfo(req, res, next) {
